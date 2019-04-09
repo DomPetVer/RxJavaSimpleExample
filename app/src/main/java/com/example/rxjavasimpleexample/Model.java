@@ -9,7 +9,7 @@ import io.reactivex.subjects.BehaviorSubject;
 
 public class Model {
 
-    List<Person> fakeList = new ArrayList<>(
+    private List<Person> fakeList = new ArrayList<>(
             Arrays.asList(
                     new Person("Stacey Starfish",Gender.FEMALE),
                     new Person("Jimmy Jellyfish", Gender.MALE),
@@ -21,17 +21,17 @@ public class Model {
         //connect to webservice?
     }
 
-    public Observable<List<Person>> getItems(){
+    public Observable<List<Person>> getPersons(){
         return itemsSubject.hide();
     }
 
     public void addNewPerson(){
         //call webservice
         fakeList.add(new Person("aPersonWithoutAName",Gender.MALE));
-        fakeAllPersons();
+        fakeAllPersonsFromWebservice();
     }
 
-    private void fakeAllPersons(){
+    private void fakeAllPersonsFromWebservice(){
         //lets inform anyone who wants to know about our awesome team..
         itemsSubject.onNext(fakeList);
     }

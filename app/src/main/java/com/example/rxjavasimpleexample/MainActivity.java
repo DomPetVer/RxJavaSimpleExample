@@ -11,11 +11,14 @@ import java.util.List;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
 
 public class MainActivity extends AppCompatActivity {
 
     private ArrayAdapter<String> arrayAdapter;
     private ViewModel viewModel;
+    private CompositeDisposable subscriptions = new CompositeDisposable();
+    private Model model;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,15 +31,19 @@ public class MainActivity extends AppCompatActivity {
         listView.setAdapter(arrayAdapter);
 
         Observable<Object> buttonClickObservable = RxView.clicks(findViewById(R.id.add_new_person));
+        subscriptions.add(buttonClickObservable
+                .subscribe(click -> model.addNewPerson()));
+
+        //the model is often provided by the application
+        this.model = new Model();
 
         //setup view model
-        viewModel = new ViewModel(buttonClickObservable);
-        viewModel.subscribe();
+        viewModel = new ViewModel(model.getPersons());
 
         //subscribe to changes and update the list in case the observable changes
-        viewModel.getNames()
+        subscriptions.add(viewModel.getNames()
                 .subscribeOn(AndroidSchedulers.mainThread())
-                .subscribe(this::updateList);
+                .subscribe(this::updateList));
     }
 
     private void updateList(List<String> list) {
@@ -47,6 +54,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        viewModel.unsubscribe();
+        subscriptions.clear();
     }
 }
